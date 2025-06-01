@@ -1,9 +1,9 @@
-name: Build and Push Debian XFCE WKS Docker Image
+name: Autobuild Debian Cloud Workspace
 
 on:
   push:
     branches:
-      - main  # 或你希望触发的分支
+      - main
 
 jobs:
   build-and-push:
@@ -19,13 +19,12 @@ jobs:
       - name: Log in to GitHub Container Registry
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
-      - name: Build Docker image
+      - name: Build Docker image with dynamic tags
         run: |
-          IMAGE_NAME=ghcr.io/${{ github.repository_owner }}/noname
-          docker build -t $IMAGE_NAME:latest -t $IMAGE_NAME:${{ github.sha }} .
+          IMAGE_NAME=ghcr.io/miko453/debian-xfce-wks
+          docker build -t $IMAGE_NAME:latest .
 
       - name: Push Docker image
         run: |
-          IMAGE_NAME=ghcr.io/${{ github.repository_owner }}/noname
+          IMAGE_NAME=ghcr.io/miko453/debian-xfce-wks
           docker push $IMAGE_NAME:latest
-          docker push $IMAGE_NAME:${{ github.sha }}
