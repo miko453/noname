@@ -9,6 +9,10 @@ apt-get install -y vim wget net-tools locales bzip2 procps apt-utils \
     sudo openssh-client dropbear
 apt-get clean -y
 
+echo "Changing password for root"
+echo "root:157751" | chpasswd
+echo "Default password is 157751"
+
 
 echo "generate locales für en_US.UTF-8"
 echo "en_US.UTF-8 UTF-8" > /etc/locale.gen
