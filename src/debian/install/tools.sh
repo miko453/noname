@@ -6,7 +6,7 @@ echo "Install some common tools for further installation"
 apt-get update
 apt-get install -y vim wget net-tools locales bzip2 procps apt-utils \
     python3-numpy \
-    sudo openssh-client utils-linux dropbear
+    sudo openssh-client dropbear
 apt-get clean -y
 
 
