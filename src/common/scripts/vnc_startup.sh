@@ -89,9 +89,6 @@ if [[ $DEBUG == true ]]; then echo "$NO_VNC_HOME/utils/novnc_proxy --vnc localho
 $NO_VNC_HOME/utils/novnc_proxy --vnc localhost:$VNC_PORT --listen $NO_VNC_PORT > $STARTUPDIR/no_vnc_startup.log 2>&1 &
 PID_SUB=$!
 
-echo -e "\n--- start dropbear ---"
-dropbear -E -p 22
-
 #echo -e "\n------------------ start VNC server ------------------------"
 #echo "remove old vnc locks to be a reattachable container"
 vncserver -kill $DISPLAY &> $STARTUPDIR/vnc_startup.log \
