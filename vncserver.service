@@ -1,0 +1,14 @@
+[Unit]
+Description=VNC Server for XFCE Desktop
+After=syslog.target network.target
+
+[Service]
+Type=simple
+User=qwe
+Group=qwe
+ExecStart=/usr/local/bin/init-vnc
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

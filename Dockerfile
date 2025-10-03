@@ -75,38 +75,11 @@ RUN wget -q https://downloads.realvnc.com/download/file/viewer.files/VNC-Viewer-
 RUN mkdir -p /root/.config/tigervnc && \
     echo "${VNC_PASSWORD}" | vncpasswd -f > /root/.config/tigervnc/passwd && \
     chmod 600 /root/.config/tigervnc/passwd
+COPY init-vnc /usr/local/bin/
+COPY vncserver.service /etc/systemd/system/
+COPY noyes.conf /etc/ssh_config.d/
 
-# 创建 VNC 配置初始化脚本
-RUN echo '#!/bin/zsh\n\
-# 检查并复制 VNC 配置\n\
-if [ ! -d "/config/.config/tigervnc" ]; then\n\
-    mkdir -p /config/.config/tigervnc\n\
-    cp -r /root/.config/tigervnc/* /config/.config/tigervnc/\n\
-fi\n\
-\n\
-# 确保权限正确\n\
-chown -R qwe:qwe /config/.config/tigervnc\n\
-chmod 600 /config/.config/tigervnc/passwd\n\
-\n\
-vncserver :1 -SecurityTypes=RA2_256 -localhost=no -fg' > /usr/local/bin/init-vnc && \
-    chmod +x /usr/local/bin/init-vnc
-
-# 创建 systemd 服务文件
-RUN echo '[Unit]\n\
-Description=VNC Server for XFCE Desktop\n\
-After=syslog.target network.target\n\
-\n\
-[Service]\n\
-Type=simple\n\
-User=qwe\n\
-Group=qwe\n\
-ExecStart=/usr/local/bin/init-vnc\n\
-Restart=on-failure\n\
-RestartSec=5\n\
-\n\
-[Install]\n\
-WantedBy=multi-user.target\n' > /etc/systemd/system/vncserver.service && \
-    systemctl enable vncserver.service
+RUN chmod 6755 /usr/local/bin/init-vnc
 
 # 清理缓存和临时文件以减少镜像大小
 RUN apt-get autoremove -y && \
