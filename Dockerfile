@@ -14,6 +14,8 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     systemd \
     systemd-sysv \
+    dialog \
+    aptitude \
     dbus \
     dbus-user-session \
     openssh-client \
@@ -35,24 +37,28 @@ RUN apt-get update && \
     zsh-autosuggestions \
     && rm -rf /var/lib/apt/lists/*
 
-# 创建用户qwe，设置home目录为/config，并添加到sudo组
+# 创建用户qwe，设置home目录为/config，并添加到sudo组，设置密码为toor
+# 这里root密码也改成toor，因为这个系统可以锁屏切用户
 RUN useradd -m -d /config -s /bin/zsh qwe && \
     usermod -aG sudo qwe && \
     echo "qwe ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers && \
-    chown -R qwe:qwe /config
+    chown -R qwe:qwe /config && \
+    echo 'root:toor' | chpasswd && \
+    echo 'qwe:toor' | chpasswd && \
+    chsh -s /bin/zsh root
 
 # 安装桌面环境和必要组件
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    xfce4 \
-    xfce4-goodies \
+    apt-get install -y \
+    kali-desktop-xfce --no-install-recommends \
     tigervnc-standalone-server \
     tigervnc-tools \
     fonts-wqy-zenhei \
     fonts-noto-cjk \
     fonts-noto-color-emoji \
     terminator \
-    && rm -rf /var/lib/apt/lists/*
+    && aptitude remove -y firefox-esr \
+    && rm -rf /var/lib/apt/lists/* 
 
 # 下载并安装 Google Chrome
 RUN wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb && \
@@ -77,9 +83,12 @@ RUN mkdir -p /root/.config/tigervnc && \
     chmod 600 /root/.config/tigervnc/passwd
 COPY init-vnc /usr/local/bin/
 COPY vncserver.service /etc/systemd/system/
-COPY noyes.conf /etc/ssh_config.d/
+COPY noyes.conf /etc/ssh/ssh_config.d/
 
 RUN chmod 6755 /usr/local/bin/init-vnc
+
+# VNC设置自启动
+RUN systemctl enable vncserver
 
 # 清理缓存和临时文件以减少镜像大小
 RUN apt-get autoremove -y && \
