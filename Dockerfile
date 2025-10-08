@@ -35,13 +35,8 @@ RUN apt-get update && \
     zsh-common \
     zsh-syntax-highlighting \
     zsh-autosuggestions \
+    locales \
     && rm -rf /var/lib/apt/lists/*
-
-# 生成中文
-RUN apt-get update && apt-get install -y locales \
-    && echo "zh_CN.UTF-8 UTF-8" > /etc/locale.conf \
-    && locale-gen \
-    && update-locale LANG=zh_CN.UTF-8
 
 # 创建用户qwe，设置home目录为/config，并添加到sudo组，设置密码为toor
 # 这里root密码也改成toor，因为这个系统可以锁屏切用户
