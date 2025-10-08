@@ -1,8 +1,8 @@
 # 使用 Kali Linux 最新版本作为基础镜像
 FROM kalilinux/kali-last-release
 
-# 设置构建参数用于 VNC 密码
-ARG VNC_PASSWORD=114514
+# 默认VNC密码给你变成114514
+ENV VNC_PASSWORD=114514
 
 # 设置环境变量以避免交互式提示
 ENV DEBIAN_FRONTEND=noninteractive \
