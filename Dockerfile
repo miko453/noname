@@ -39,7 +39,7 @@ RUN apt-get update && \
 
 # 生成中文
 RUN apt-get update && apt-get install -y locales \
-    && echo "zh_CN.UTF-8 UTF-8" > /etc/locale \
+    && echo "zh_CN.UTF-8 UTF-8" > /etc/locale.conf \
     && locale-gen \
     && update-locale LANG=zh_CN.UTF-8
 
