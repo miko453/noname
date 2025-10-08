@@ -1,0 +1,35 @@
+name: KaliLinux lite
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    # 登录 GHCR
+    - name: Log in to GitHub Container Registry
+      uses: docker/login-action@v2
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    # 构建镜像
+    - name: Build the Docker image
+      run: |
+        IMAGE_TAG=ghcr.io/${{ github.repository_owner }}/kali:lite
+        docker build . --file Dockerfile --tag $IMAGE_TAG
+        echo "Built image: $IMAGE_TAG"
+
+    # 推送镜像到 GHCR
+    - name: Push the Docker image
+      run: |
+        docker push ghcr.io/${{ github.repository_owner }}/my-image-name:$(date +%s)
