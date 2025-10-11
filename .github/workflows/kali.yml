@@ -23,9 +23,15 @@ jobs:
         password: ${{ secrets.GITHUB_TOKEN }}
 
     # 构建镜像
-    - name: Build the Docker image
+    - name: Build the mainly image
       run: |
         IMAGE_TAG=ghcr.io/${{ github.repository_owner }}/kali
+        docker build . --file Dockerfile --tag $IMAGE_TAG
+        echo "Built image: $IMAGE_TAG"
+
+    - name: Build base image
+      run: |
+        IMAGE_TAG=ghcr.io/${{ github.repository_owner }}/kali:base
         docker build . --file Dockerfile --tag $IMAGE_TAG
         echo "Built image: $IMAGE_TAG"
 
@@ -33,3 +39,4 @@ jobs:
     - name: Push the Docker image
       run: |
         docker push ghcr.io/${{ github.repository_owner }}/kali
+        docker push ghcr.io/${{ github.repository_owner }}/kali:base

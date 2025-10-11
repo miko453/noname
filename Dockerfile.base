@@ -1,0 +1,15 @@
+FROM kalilinux/kali-last-release
+
+ENV container docker
+
+RUN apt update && apt install -y \
+    systemd systemd-sysv \
+    tmate openssh-server sudo curl wget iproute2 htop net-tools iputils-ping unzip openssh-client psmisc&& \
+    mkdir -p /run/sshd && \
+    echo "root:toor" | chpasswd && \
+    systemctl enable ssh && \
+    apt clean && rm -rf /var/lib/apt/lists/*
+
+STOPSIGNAL SIGRTMIN+3
+
+CMD ["/sbin/init"]
