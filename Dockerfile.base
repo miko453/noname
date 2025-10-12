@@ -42,7 +42,7 @@ RUN useradd -m -d /config -s /bin/zsh qwe && \
     echo 'root:toor' | chpasswd && \
     echo 'qwe:toor' | chpasswd && \
     chsh -s /bin/zsh root && \
-    systemctl enable sshd
+    systemctl enable ssh
 
 COPY noyes.conf /etc/ssh/ssh_config.d/
 
