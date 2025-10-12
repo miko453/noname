@@ -31,7 +31,7 @@ jobs:
     - name: Build base image
       run: |
         IMAGE_TAG=ghcr.io/${{ github.repository_owner }}/kali-base:${VERSION}
-        docker build . --file Dockerfile --tag $IMAGE_TAG
+        docker build . --file Dockerfile.base --tag $IMAGE_TAG
         echo "Built base image: $IMAGE_TAG"
 
     # 构建 main 镜像（依赖 base）
