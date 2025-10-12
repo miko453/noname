@@ -24,7 +24,7 @@ jobs:
 
     # 设置版本号（日期+时间）
     - name: Set version
-      run: echo "VERSION=$(date +%Y%m%d%H%M%S)" >> $GITHUB_ENV
+      run: echo "VERSION=$(date +%Y%m%d)" >> $GITHUB_ENV
 
     # Build & Push base 镜像
     - name: Build & Push base image
