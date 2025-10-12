@@ -1,4 +1,4 @@
-name: Build KaliLinux
+name: Build KaliLinux Webtop
 
 on:
   push:
@@ -22,21 +22,27 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
 
-    # 构建镜像
-    - name: Build the mainly image
+    # 设置版本号（日期+时间）
+    - name: Set version
       run: |
-        IMAGE_TAG=ghcr.io/${{ github.repository_owner }}/kali
-        docker build . --file Dockerfile --tag $IMAGE_TAG
-        echo "Built image: $IMAGE_TAG"
+        echo "VERSION=$(date +%Y%m%d%H%M%S)" >> $GITHUB_ENV
 
+    # 构建 base 镜像
     - name: Build base image
       run: |
-        IMAGE_TAG=ghcr.io/${{ github.repository_owner }}/kali:base
+        IMAGE_TAG=ghcr.io/${{ github.repository_owner }}/kali-base:${VERSION}
         docker build . --file Dockerfile --tag $IMAGE_TAG
-        echo "Built image: $IMAGE_TAG"
+        echo "Built base image: $IMAGE_TAG"
+
+    # 构建 main 镜像（依赖 base）
+    - name: Build main image
+      run: |
+        IMAGE_TAG=ghcr.io/${{ github.repository_owner }}/kali:${VERSION}
+        docker build . --file Dockerfile --tag $IMAGE_TAG
+        echo "Built main image: $IMAGE_TAG"
 
     # 推送镜像到 GHCR
-    - name: Push the Docker image
+    - name: Push the Docker images
       run: |
-        docker push ghcr.io/${{ github.repository_owner }}/kali
-        docker push ghcr.io/${{ github.repository_owner }}/kali:base
+        docker push ghcr.io/${{ github.repository_owner }}/kali-base:${VERSION}
+        docker push ghcr.io/${{ github.repository_owner }}/kali:${VERSION}

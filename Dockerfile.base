@@ -2,13 +2,48 @@ FROM kalilinux/kali-last-release
 
 ENV container docker
 
-RUN apt update && apt install -y \
-    systemd systemd-sysv \
-    tmate openssh-server sudo curl wget iproute2 htop net-tools iputils-ping unzip openssh-client psmisc&& \
-    mkdir -p /run/sshd && \
-    echo "root:toor" | chpasswd && \
-    systemctl enable ssh && \
-    apt clean && rm -rf /var/lib/apt/lists/*
+ENV DEBIAN_FRONTEND=noninteractive \
+    USER=qwe \
+    HOME=/config
+
+RUN apt-get update && \
+    apt-get install -y \
+    dropbear \
+    systemd \
+    systemd-sysv \
+    dialog \
+    aptitude \
+    dbus \
+    dbus-user-session \
+    openssh-client \
+    curl \
+    wget \
+    unzip \
+    htop \
+    iputils-ping \
+    net-tools \
+    iproute2 \
+    psmisc \
+    sudo \
+    vim \
+    ca-certificates \
+    dbus-x11 \
+    zsh \
+    zsh-common \
+    zsh-syntax-highlighting \
+    zsh-autosuggestions \
+    locales \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN useradd -m -d /config -s /bin/zsh qwe && \
+    usermod -aG sudo qwe && \
+    echo "qwe ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers && \
+    chown -R qwe:qwe /config && \
+    echo 'root:toor' | chpasswd && \
+    echo 'qwe:toor' | chpasswd && \
+    chsh -s /bin/zsh root
+
+COPY noyes.conf /etc/ssh/ssh_config.d/
 
 STOPSIGNAL SIGRTMIN+3
 

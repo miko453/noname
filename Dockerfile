@@ -1,64 +1,18 @@
-# 使用 Kali Linux 最新版本作为基础镜像
-FROM kalilinux/kali-last-release
+FROM ghcr.io/miko453/kali-base
 
 # 默认VNC密码给你变成114514
 ENV VNC_PASSWORD=114514
 
-# 设置环境变量以避免交互式提示
-ENV DEBIAN_FRONTEND=noninteractive \
-    USER=qwe \
-    HOME=/config
-
-# 更新包列表并安装基础工具
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    systemd \
-    systemd-sysv \
-    dialog \
-    aptitude \
-    dbus \
-    dbus-user-session \
-    openssh-client \
-    curl \
-    wget \
-    unzip \
-    htop \
-    iputils-ping \
-    net-tools \
-    iproute2 \
-    psmisc \
-    sudo \
-    vim \
-    ca-certificates \
-    dbus-x11 \
-    zsh \
-    zsh-common \
-    zsh-syntax-highlighting \
-    zsh-autosuggestions \
-    locales \
-    && rm -rf /var/lib/apt/lists/*
-
-# 创建用户qwe，设置home目录为/config，并添加到sudo组，设置密码为toor
-# 这里root密码也改成toor，因为这个系统可以锁屏切用户
-RUN useradd -m -d /config -s /bin/zsh qwe && \
-    usermod -aG sudo qwe && \
-    echo "qwe ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers && \
-    chown -R qwe:qwe /config && \
-    echo 'root:toor' | chpasswd && \
-    echo 'qwe:toor' | chpasswd && \
-    chsh -s /bin/zsh root
-
 # 安装桌面环境和必要组件
 RUN apt-get update && \
-    apt-get install -y \
-    kali-desktop-xfce --no-install-recommends \
+    apt-get install -y --no-install-recommends \
+    kali-desktop-xfce \
     tigervnc-standalone-server \
     tigervnc-tools \
     fonts-wqy-zenhei \
     fonts-noto-cjk \
     fonts-noto-color-emoji \
     terminator \
-    && aptitude remove -y firefox-esr \
     && rm -rf /var/lib/apt/lists/* 
 
 # 下载并安装 Google Chrome
@@ -84,7 +38,6 @@ RUN mkdir -p /root/.config/tigervnc && \
     chmod 600 /root/.config/tigervnc/passwd
 COPY init-vnc /usr/local/bin/
 COPY vncserver.service /etc/systemd/system/
-COPY noyes.conf /etc/ssh/ssh_config.d/
 
 RUN chmod 6755 /usr/local/bin/init-vnc
 
