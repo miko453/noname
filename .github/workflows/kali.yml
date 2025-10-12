@@ -30,19 +30,23 @@ jobs:
     # 构建 base 镜像
     - name: Build base image
       run: |
-        IMAGE_TAG=ghcr.io/${{ github.repository_owner }}/kali-base:${VERSION}
-        docker build . --file Dockerfile.base --tag $IMAGE_TAG
-        echo "Built base image: $IMAGE_TAG"
+        BASE_IMAGE_TAG=ghcr.io/${{ github.repository_owner }}/kali-base:${VERSION}
+        docker build . --file Dockerfile.base --tag $BASE_IMAGE_TAG
+        echo "Built base image: $BASE_IMAGE_TAG"
 
-    # 构建 main 镜像（依赖 base）
+    # 推送 base 镜像
+    - name: Push base image
+      run: |
+        docker push $BASE_IMAGE_TAG
+
+    # 构建 main 镜像（依赖 GHCR 上的 base）
     - name: Build main image
       run: |
-        IMAGE_TAG=ghcr.io/${{ github.repository_owner }}/kali:${VERSION}
-        docker build . --file Dockerfile --tag $IMAGE_TAG
-        echo "Built main image: $IMAGE_TAG"
+        MAIN_IMAGE_TAG=ghcr.io/${{ github.repository_owner }}/kali:${VERSION}
+        docker build . --file Dockerfile --build-arg BASE_IMAGE=$BASE_IMAGE_TAG --tag $MAIN_IMAGE_TAG
+        echo "Built main image: $MAIN_IMAGE_TAG"
 
-    # 推送镜像到 GHCR
-    - name: Push the Docker images
+    # 推送 main 镜像
+    - name: Push main image
       run: |
-        docker push ghcr.io/${{ github.repository_owner }}/kali-base:${VERSION}
-        docker push ghcr.io/${{ github.repository_owner }}/kali:${VERSION}
+        docker push $MAIN_IMAGE_TAG
