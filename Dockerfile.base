@@ -8,7 +8,6 @@ ENV DEBIAN_FRONTEND=noninteractive \
 
 RUN apt-get update && \
     apt-get install -y \
-    dropbear \
     systemd \
     systemd-sysv \
     dialog \
@@ -16,6 +15,7 @@ RUN apt-get update && \
     dbus \
     dbus-user-session \
     openssh-client \
+    openssh-server \
     curl \
     wget \
     unzip \
@@ -41,7 +41,8 @@ RUN useradd -m -d /config -s /bin/zsh qwe && \
     chown -R qwe:qwe /config && \
     echo 'root:toor' | chpasswd && \
     echo 'qwe:toor' | chpasswd && \
-    chsh -s /bin/zsh root
+    chsh -s /bin/zsh root && \
+    systemctl enable sshd
 
 COPY noyes.conf /etc/ssh/ssh_config.d/
 
