@@ -24,29 +24,23 @@ jobs:
 
     # 设置版本号（日期+时间）
     - name: Set version
-      run: |
-        echo "VERSION=$(date +%Y%m%d%H%M%S)" >> $GITHUB_ENV
+      run: echo "VERSION=$(date +%Y%m%d%H%M%S)" >> $GITHUB_ENV
 
-    # 构建 base 镜像
-    - name: Build base image
+    # Build & Push base 镜像
+    - name: Build & Push base image
       run: |
-        BASE_IMAGE_TAG=ghcr.io/${{ github.repository_owner }}/kali-base:${VERSION}
-        docker build . --file Dockerfile.base --tag $BASE_IMAGE_TAG
-        echo "Built base image: $BASE_IMAGE_TAG"
+        BASE_TAG=ghcr.io/${{ github.repository_owner }}/kali-base:${VERSION}
+        BASE_TAG_LATEST=ghcr.io/${{ github.repository_owner }}/kali-base:latest
+        docker build . --file Dockerfile.base --tag $BASE_TAG --tag $BASE_TAG_LATEST
+        docker push $BASE_TAG
+        docker push $BASE_TAG_LATEST
 
-    # 推送 base 镜像
-    - name: Push base image
+    # Build & Push main 镜像（依赖 base 镜像）
+    - name: Build & Push main image
       run: |
-        docker push $BASE_IMAGE_TAG
-
-    # 构建 main 镜像（依赖 GHCR 上的 base）
-    - name: Build main image
-      run: |
-        MAIN_IMAGE_TAG=ghcr.io/${{ github.repository_owner }}/kali:${VERSION}
-        docker build . --file Dockerfile --build-arg BASE_IMAGE=$BASE_IMAGE_TAG --tag $MAIN_IMAGE_TAG
-        echo "Built main image: $MAIN_IMAGE_TAG"
-
-    # 推送 main 镜像
-    - name: Push main image
-      run: |
-        docker push $MAIN_IMAGE_TAG
+        BASE_TAG=ghcr.io/${{ github.repository_owner }}/kali-base:${VERSION}  # CI 每次都是干净环境，确保能拉到 base
+        MAIN_TAG=ghcr.io/${{ github.repository_owner }}/kali:${VERSION}
+        MAIN_TAG_LATEST=ghcr.io/${{ github.repository_owner }}/kali:latest
+        docker build . --file Dockerfile --build-arg BASE_IMAGE=$BASE_TAG --tag $MAIN_TAG --tag $MAIN_TAG_LATEST
+        docker push $MAIN_TAG
+        docker push $MAIN_TAG_LATEST
