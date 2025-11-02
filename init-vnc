@@ -9,4 +9,4 @@ fi
 chown -R qwe:qwe /config/.config/tigervnc
 chmod 600 /config/.config/tigervnc/passwd
 
-vncserver :1 -SecurityTypes=RA2_256 -localhost=no -fg
+vncserver :1 -SecurityTypes RA2_256 -localhost no -fg
