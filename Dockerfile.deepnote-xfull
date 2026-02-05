@@ -1,0 +1,30 @@
+FROM deepnote/python:3.13
+
+ARG APT_MIRROR
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    VNC_PASSWORD=114514 \
+    DESKTOP_CMD=/usr/bin/startxfce4 \
+    APT_MIRROR=${APT_MIRROR}
+
+COPY scripts/apt-debian.sh /usr/local/bin/apt.sh
+COPY scripts/entrypoints/start-vnc.sh /app/start-vnc.sh
+COPY scripts/entrypoints/start-novnc.sh /app/start-novnc.sh
+COPY scripts/chrome-wrapper.sh /usr/local/bin/chrome
+
+RUN chmod +x /usr/local/bin/apt.sh /app/start-vnc.sh /app/start-novnc.sh /usr/local/bin/chrome && \
+    /usr/local/bin/apt.sh switch && \
+    apt-get install -y \
+      xfce4 xfce4-goodies xfce4-screenshooter terminator \
+      tigervnc-standalone-server tigervnc-tools \
+      novnc websockify \
+      fonts-wqy-zenhei fonts-noto-cjk fonts-noto-color-emoji \
+      wget curl ca-certificates sudo zsh dbus-x11 xdg-utils && \
+    wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb && \
+    apt-get install -y ./google-chrome-stable_current_amd64.deb && \
+    rm -f google-chrome-stable_current_amd64.deb && \
+    /usr/local/bin/apt.sh restore && \
+    apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+EXPOSE 5901 10081
+CMD ["/app/start-novnc.sh"]

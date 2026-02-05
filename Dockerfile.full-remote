@@ -1,0 +1,4 @@
+# Deprecated alias: full now already includes noVNC+NoMachine+audio+RDP.
+ARG BASE_IMAGE=miko453/headless:full
+FROM ${BASE_IMAGE}
+CMD ["/app/start-novnc.sh"]

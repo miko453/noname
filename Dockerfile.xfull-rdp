@@ -1,0 +1,4 @@
+# Deprecated alias: xfull now uses merged noVNC+RDP profile via Dockerfile.xfull-remote.
+ARG BASE_IMAGE=miko453/headless:xfull-remote
+FROM ${BASE_IMAGE}
+CMD ["/app/start-novnc.sh"]
