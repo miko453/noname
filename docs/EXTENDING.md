@@ -11,7 +11,7 @@
 
 ## 2) 新增 Dockerfile
 
-示例：新增 `Dockerfile.myprofile`
+示例：新增 `images/Dockerfile.myprofile`
 
 ```dockerfile
 ARG BASE_IMAGE=miko453/headless:xfull
@@ -31,7 +31,13 @@ RUN /usr/local/bin/apt.sh switch && \
 
 ## 4) 接入 CI
 
-GitHub Actions 默认读取 `make build-all` 与 `make push-all`，只需确保 Makefile 里已包含新 profile。
+GitHub Actions 已按镜像依赖拆成多 job：
+
+- 基础：`base`、`deepnote-xfull`
+- 主链：`lite -> xfull -> xfull-remote -> full`
+- 并行分支：`lite-novnc`、`lite-rdp`、`lite-novnc-rdp`、`icewm-thin*`
+
+新增 profile 时，按父子依赖添加单独 job，使其“构建完成后立即 push”。
 
 ## 5) 发布前清理旧 tag（可选）
 
@@ -42,8 +48,3 @@ make cleanup-tags VERSION=<ver>
 ```
 
 > `cleanup-tags` 依赖 Docker Hub API 删除 tag，请确认 token 具备删除权限。
-
-
-## 分支补充
-
-- `icewm-thin-novnc`：在 `icewm-thin` 基础上增加 `novnc + websockify`，网页访问端口为 `10081`。
