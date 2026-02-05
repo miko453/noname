@@ -1,30 +1,22 @@
 FROM kalilinux/kali-last-release
 
-ENV container docker
-ENV DEBIAN_FRONTEND=noninteractive
+ARG APT_MIRROR
+
+ENV container=docker \
+    DEBIAN_FRONTEND=noninteractive \
+    APT_MIRROR=${APT_MIRROR}
 
 COPY apt.sh /usr/local/bin/apt.sh
-RUN chmod +x /usr/local/bin/apt.sh
+COPY noyes.conf /etc/ssh/ssh_config.d/noyes.conf
+COPY scripts/entrypoints/start-sshd.sh /usr/local/bin/start-sshd.sh
 
-RUN apt.sh switch && \
-    apt-get update && \
+RUN chmod +x /usr/local/bin/apt.sh /usr/local/bin/start-sshd.sh && \
+    /usr/local/bin/apt.sh switch && \
     apt-get install -y --no-install-recommends \
-        dialog aptitude dbus dbus-user-session openssh-client openssh-server \
-        curl wget unzip htop iputils-ping net-tools iproute2 psmisc vim \
-        ca-certificates dbus-x11 zsh zsh-common zsh-syntax-highlighting \
-        zsh-autosuggestions locales sudo && \
-    apt.sh restore && \
-    rm -rf /var/lib/apt/lists/* && \
-    useradd -m -d /config -s /bin/zsh qwe && \
-    adduser qwe sudo && \
-    chown -R qwe:qwe /config && \
-    echo 'root:toor' | chpasswd && \
-    echo 'qwe:toor' | chpasswd && \
-    chsh -s /bin/zsh root && \
-    echo "qwe ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/qwe && \
-    chmod 0440 /etc/sudoers.d/qwe
-
-COPY noyes.conf /etc/ssh/ssh_config.d/
+      openssh-client openssh-server sudo zsh locales ca-certificates \
+      curl wget vim net-tools iproute2 iputils-ping procps dbus-user-session && \
+    /usr/local/bin/apt.sh restore && \
+    rm -rf /var/lib/apt/lists/*
 
 EXPOSE 22
-CMD ["/sbin/sshd", "-D"]
+CMD ["/usr/local/bin/start-sshd.sh"]
