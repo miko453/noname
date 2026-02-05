@@ -1,0 +1,14 @@
+ARG BASE_IMAGE=noname:lite-vnc
+FROM ${BASE_IMAGE}
+
+COPY scripts/entrypoints/start-novnc.sh /app/start-novnc.sh
+
+RUN chmod +x /app/start-novnc.sh && \
+    /usr/local/bin/apt.sh switch && \
+    apt-get install -y --no-install-recommends novnc websockify && \
+    /usr/local/bin/apt.sh restore && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+EXPOSE 5901 10081
+CMD ["/app/start-novnc.sh"]

@@ -1,4 +1,3 @@
-# Legacy compatibility alias -> use Dockerfile.xfull for new builds.
 ARG BASE_IMAGE=miko453/headless:lite
 FROM ${BASE_IMAGE}
 

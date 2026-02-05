@@ -1,3 +1,4 @@
+# Alias of lite profile for compatibility.
 ARG BASE_IMAGE=miko453/headless:base
 FROM ${BASE_IMAGE}
 

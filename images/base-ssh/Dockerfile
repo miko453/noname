@@ -1,13 +1,10 @@
 FROM kalilinux/kali-last-release
 
-ARG APT_MIRROR
-
 ENV container=docker \
-    DEBIAN_FRONTEND=noninteractive \
-    APT_MIRROR=${APT_MIRROR}
+    DEBIAN_FRONTEND=noninteractive
 
-COPY apt.sh /usr/local/bin/apt.sh
-COPY noyes.conf /etc/ssh/ssh_config.d/noyes.conf
+COPY scripts/apt.sh /usr/local/bin/apt.sh
+COPY scripts/noyes.conf /etc/ssh/ssh_config.d/noyes.conf
 COPY scripts/entrypoints/start-sshd.sh /usr/local/bin/start-sshd.sh
 
 RUN chmod +x /usr/local/bin/apt.sh /usr/local/bin/start-sshd.sh && \

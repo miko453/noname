@@ -1,0 +1,4 @@
+# Deprecated alias: replaced by icewm-thin for better usability.
+ARG BASE_IMAGE=miko453/headless:icewm-thin
+FROM ${BASE_IMAGE}
+CMD ["/app/start-vnc.sh"]
