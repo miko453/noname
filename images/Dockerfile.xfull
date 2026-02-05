@@ -1,9 +1,8 @@
-ARG BASE_IMAGE=miko453/headless:lite
+ARG BASE_IMAGE=miko453/headless:base
 FROM ${BASE_IMAGE}
 
 RUN /usr/local/bin/apt.sh switch && \
-    apt-get install -y --no-install-recommends kali-desktop-xfce xfce4-screenshooter && \
-    apt-get purge -y xfce4 || true && \
+    apt-get install -y kali-desktop-xfce && \
     /usr/local/bin/apt.sh restore && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 

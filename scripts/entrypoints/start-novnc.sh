@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-NOVNC_PORT="${NOVNC_PORT:-10081}"
+NOVNC_PORT="${NOVNC_PORT:-6001}"
 VNC_TARGET_HOST="${VNC_TARGET_HOST:-127.0.0.1}"
 VNC_TARGET_PORT="${VNC_TARGET_PORT:-5901}"
 NOVNC_WEB="${NOVNC_WEB:-/usr/share/novnc}"

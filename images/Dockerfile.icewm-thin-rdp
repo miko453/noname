@@ -5,7 +5,7 @@ COPY scripts/entrypoints/start-vnc-rdp.sh /app/start-vnc-rdp.sh
 
 RUN chmod +x /app/start-vnc-rdp.sh && \
     /usr/local/bin/apt.sh switch && \
-    apt-get install -y --no-install-recommends xrdp xorgxrdp && \
+    apt-get install -y xrdp xorgxrdp && \
     /usr/local/bin/apt.sh restore && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
