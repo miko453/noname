@@ -1,0 +1,109 @@
+name: docker-build-push
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main", "work"]
+    paths:
+      - "Dockerfile*"
+      - "scripts/**"
+      - "apt.sh"
+      - "noyes.conf"
+      - "Makefile"
+      - ".dockerignore"
+      - "docs/**"
+
+env:
+  VERSION: ci-${{ github.sha }}
+
+jobs:
+  stage1-core:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [base, deepnote-xfull]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Optional cleanup old tags
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+        run: make cleanup-tags VERSION=${VERSION} || true
+      - name: Build + push stage1
+        run: |
+          make build-${{ matrix.target }} VERSION=${VERSION}
+          make push-${{ matrix.target }} VERSION=${VERSION} || make push-${{ matrix.target }} VERSION=${VERSION}
+
+  stage2-base-branches:
+    needs: stage1-core
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [lite, xfull, icewm-thin]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build + push stage2
+        run: |
+          make build-${{ matrix.target }} VERSION=${VERSION}
+          make push-${{ matrix.target }} VERSION=${VERSION} || make push-${{ matrix.target }} VERSION=${VERSION}
+
+  stage3-lite-derivatives:
+    needs: stage2-base-branches
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [lite-novnc, lite-rdp, lite-novnc-rdp, icewm-thin-novnc, icewm-thin-rdp]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build + push stage3
+        run: |
+          make build-${{ matrix.target }} VERSION=${VERSION}
+          make push-${{ matrix.target }} VERSION=${VERSION} || make push-${{ matrix.target }} VERSION=${VERSION}
+
+  stage4-xfull-remote:
+    needs: stage2-base-branches
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build + push xfull-remote
+        run: |
+          make build-xfull-remote VERSION=${VERSION}
+          make push-xfull-remote VERSION=${VERSION} || make push-xfull-remote VERSION=${VERSION}
+
+  stage5-full:
+    needs: stage4-xfull-remote
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build + push full
+        run: |
+          make build-full VERSION=${VERSION}
+          make push-full VERSION=${VERSION} || make push-full VERSION=${VERSION}
