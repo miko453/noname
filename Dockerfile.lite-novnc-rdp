@@ -9,5 +9,5 @@ RUN chmod +x /app/start-vnc-rdp.sh && \
     /usr/local/bin/apt.sh restore && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
-EXPOSE 5901 10081 3389
+EXPOSE 22 5901 10081 3389
 CMD ["/app/start-vnc-rdp.sh"]

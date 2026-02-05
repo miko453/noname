@@ -46,8 +46,8 @@ build-xfull: build-lite
 build-xfull-remote: build-xfull
 	docker build -f Dockerfile.xfull-remote --build-arg BASE_IMAGE=$(XFULL_IMAGE) -t $(XFULL_REMOTE_IMAGE) .
 
-build-full: build-xfull
-	docker build -f Dockerfile.full --build-arg BASE_IMAGE=$(XFULL_IMAGE) -t $(FULL_IMAGE) .
+build-full: build-xfull-remote
+	docker build -f Dockerfile.full --build-arg BASE_IMAGE=$(XFULL_REMOTE_IMAGE) -t $(FULL_IMAGE) .
 
 build-icewm-thin: build-base
 	docker build -f Dockerfile.icewm-thin --build-arg BASE_IMAGE=$(BASE_IMAGE) -t $(ICEWM_THIN_IMAGE) .

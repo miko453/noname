@@ -2,30 +2,28 @@
 
 镜像仓库：`docker.io/miko453/headless`
 
-## 分支关系
+## 分支关系（当前规范）
 
 ```text
-base (SSH only)
-├─ lite (XFCE4 + VNC + Chrome + RealVNC Viewer + xfce4-screenshooter)
-│  ├─ lite-novnc (复用 lite)
-│  ├─ lite-rdp
-│  └─ lite-novnc-rdp
-├─ xfull (复用 lite，把 xfce4 升级为 kali-desktop-xfce)
-│  └─ xfull-remote (合并 noVNC + RDP)
-├─ full (复用 xfull：noVNC + NoMachine + PulseAudio + AnyDesk + RDP 全量)
-└─ icewm-thin (极简 IceWM + RealVNC Viewer，无 Chrome)
-   └─ icewm-thin-rdp
+第一层：base、deepnote
+├─ 第二层（基于 base 派生）：lite、icewm-thin、xfull
+│  ├─ 第三层（lite 分支）：lite-novnc、lite-rdp、lite-novnc-rdp
+│  ├─ 第三层（icewm-thin 分支）：icewm-thin-rdp
+│  └─ 第三层（xfull 分支）：xfull-remote
+│     └─ 第四层：full（基于 xfull-remote）
 ```
 
 ## 关键点
 
 - `base` 是 SSH only。
 - `lite` 增加 `xfce4-screenshooter`。
-- `xfull` 的 noVNC 和 RDP 已合并为一个镜像：`xfull-remote`。
-- `full` 不再拆子分支，直接全功能。
+- `xfull` 的 noVNC 和 RDP 在 `xfull-remote`。
+- `full` 基于 `xfull-remote` 继续叠加 NoMachine / 音频 / 远控组件。
 - OpenBox 改为 IceWM。
 - APT 保持原有 `/system/kali` 镜像并带失败回滚。
 - deepnote 特殊版使用 `/system/debian`，见 `Dockerfile.deepnote-xfull`。
+- 所有主要运行态镜像默认保留端口：SSH `22`、VNC `5901`，带 RDP 的镜像额外提供 `3389`。
+- `start-sshd.sh` 默认账号口令：`root/toor`、`qwe/toor`（可通过环境变量覆盖）。
 
 ## Deepnote 专用镜像
 

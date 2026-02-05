@@ -9,5 +9,5 @@ RUN chmod +x /app/start-novnc.sh && \
     /usr/local/bin/apt.sh restore && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
-EXPOSE 5901 10081
+EXPOSE 22 5901 10081
 CMD ["/app/start-novnc.sh"]
