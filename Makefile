@@ -6,97 +6,74 @@ VERSION ?= latest
 APT_MIRROR ?= http://mirrors.7.b.0.5.0.7.4.0.1.0.0.2.ip6.arpa/system/kali
 DEBIAN_MIRROR ?= http://mirrors.7.b.0.5.0.7.4.0.1.0.0.2.ip6.arpa/system/debian
 
-BASE_IMAGE := $(REGISTRY)/$(IMAGE):base-$(VERSION)
-LITE_IMAGE := $(REGISTRY)/$(IMAGE):lite-$(VERSION)
-LITE_NOVNC_IMAGE := $(REGISTRY)/$(IMAGE):lite-novnc-$(VERSION)
-LITE_RDP_IMAGE := $(REGISTRY)/$(IMAGE):lite-rdp-$(VERSION)
-LITE_NOVNC_RDP_IMAGE := $(REGISTRY)/$(IMAGE):lite-novnc-rdp-$(VERSION)
-XFULL_IMAGE := $(REGISTRY)/$(IMAGE):xfull-$(VERSION)
-XFULL_REMOTE_IMAGE := $(REGISTRY)/$(IMAGE):xfull-remote-$(VERSION)
-FULL_IMAGE := $(REGISTRY)/$(IMAGE):full-$(VERSION)
-ICEWM_THIN_IMAGE := $(REGISTRY)/$(IMAGE):icewm-thin-$(VERSION)
-ICEWM_THIN_NOVNC_IMAGE := $(REGISTRY)/$(IMAGE):icewm-thin-novnc-$(VERSION)
-ICEWM_THIN_RDP_IMAGE := $(REGISTRY)/$(IMAGE):icewm-thin-rdp-$(VERSION)
-DEEPNOTE_XFULL_IMAGE := $(REGISTRY)/$(IMAGE):deepnote-xfull-$(VERSION)
+IMAGE_base := $(REGISTRY)/$(IMAGE):base-$(VERSION)
+IMAGE_lite := $(REGISTRY)/$(IMAGE):lite-$(VERSION)
+IMAGE_lite-novnc := $(REGISTRY)/$(IMAGE):lite-novnc-$(VERSION)
+IMAGE_lite-rdp := $(REGISTRY)/$(IMAGE):lite-rdp-$(VERSION)
+IMAGE_lite-novnc-rdp := $(REGISTRY)/$(IMAGE):lite-novnc-rdp-$(VERSION)
+IMAGE_xfull := $(REGISTRY)/$(IMAGE):xfull-$(VERSION)
+IMAGE_xfull-remote := $(REGISTRY)/$(IMAGE):xfull-remote-$(VERSION)
+IMAGE_full := $(REGISTRY)/$(IMAGE):full-$(VERSION)
+IMAGE_icewm-thin := $(REGISTRY)/$(IMAGE):icewm-thin-$(VERSION)
+IMAGE_icewm-thin-novnc := $(REGISTRY)/$(IMAGE):icewm-thin-novnc-$(VERSION)
+IMAGE_icewm-thin-rdp := $(REGISTRY)/$(IMAGE):icewm-thin-rdp-$(VERSION)
+IMAGE_deepnote-xfull := $(REGISTRY)/$(IMAGE):deepnote-xfull-$(VERSION)
 
-TAGS := base-$(VERSION) lite-$(VERSION) lite-novnc-$(VERSION) lite-rdp-$(VERSION) lite-novnc-rdp-$(VERSION) xfull-$(VERSION) xfull-remote-$(VERSION) full-$(VERSION) icewm-thin-$(VERSION) icewm-thin-novnc-$(VERSION) icewm-thin-rdp-$(VERSION) deepnote-xfull-$(VERSION)
+ALL_TARGETS := base lite lite-novnc lite-rdp lite-novnc-rdp xfull xfull-remote full icewm-thin icewm-thin-novnc icewm-thin-rdp deepnote-xfull
 
-.PHONY: build-base build-lite build-lite-novnc build-lite-rdp build-lite-novnc-rdp \
-	build-xfull build-xfull-remote build-full build-icewm-thin build-icewm-thin-novnc build-icewm-thin-rdp build-deepnote-xfull build-all \
-	push-base push-lite push-lite-novnc push-lite-rdp push-lite-novnc-rdp push-xfull push-xfull-remote push-full \
-	push-icewm-thin push-icewm-thin-novnc push-icewm-thin-rdp push-deepnote-xfull push-all cleanup-tags show-tags optimize
+TAGS := $(foreach t,$(ALL_TARGETS),$(t)-$(VERSION))
+
+.PHONY: $(addprefix build-,$(ALL_TARGETS)) $(addprefix push-,$(ALL_TARGETS)) build-all push-all cleanup-tags show-tags optimize
 
 build-base:
-	docker build -f Dockerfile.base --build-arg APT_MIRROR=$(APT_MIRROR) -t $(BASE_IMAGE) .
-
-build-lite: build-base
-	docker build -f Dockerfile.lite --build-arg BASE_IMAGE=$(BASE_IMAGE) -t $(LITE_IMAGE) .
-
-build-lite-novnc: build-lite
-	docker build -f Dockerfile.lite-novnc --build-arg BASE_IMAGE=$(LITE_IMAGE) -t $(LITE_NOVNC_IMAGE) .
-
-build-lite-rdp: build-lite
-	docker build -f Dockerfile.lite-rdp --build-arg BASE_IMAGE=$(LITE_IMAGE) -t $(LITE_RDP_IMAGE) .
-
-build-lite-novnc-rdp: build-lite-novnc
-	docker build -f Dockerfile.lite-novnc-rdp --build-arg BASE_IMAGE=$(LITE_NOVNC_IMAGE) -t $(LITE_NOVNC_RDP_IMAGE) .
-
-build-xfull: build-lite
-	docker build -f Dockerfile.xfull --build-arg BASE_IMAGE=$(LITE_IMAGE) -t $(XFULL_IMAGE) .
-
-build-xfull-remote: build-xfull
-	docker build -f Dockerfile.xfull-remote --build-arg BASE_IMAGE=$(XFULL_IMAGE) -t $(XFULL_REMOTE_IMAGE) .
-
-build-full: build-xfull-remote
-	docker build -f Dockerfile.full --build-arg BASE_IMAGE=$(XFULL_REMOTE_IMAGE) -t $(FULL_IMAGE) .
-
-build-icewm-thin: build-base
-	docker build -f Dockerfile.icewm-thin --build-arg BASE_IMAGE=$(BASE_IMAGE) -t $(ICEWM_THIN_IMAGE) .
-
-build-icewm-thin-novnc: build-icewm-thin
-	docker build -f Dockerfile.icewm-thin-novnc --build-arg BASE_IMAGE=$(ICEWM_THIN_IMAGE) -t $(ICEWM_THIN_NOVNC_IMAGE) .
-
-build-icewm-thin-rdp: build-icewm-thin
-	docker build -f Dockerfile.icewm-thin-rdp --build-arg BASE_IMAGE=$(ICEWM_THIN_IMAGE) -t $(ICEWM_THIN_RDP_IMAGE) .
+	docker build -f images/Dockerfile.base --build-arg APT_MIRROR=$(APT_MIRROR) -t $(IMAGE_base) .
 
 build-deepnote-xfull:
-	docker build -f Dockerfile.deepnote-xfull --build-arg APT_MIRROR=$(DEBIAN_MIRROR) -t $(DEEPNOTE_XFULL_IMAGE) .
+	docker build -f images/Dockerfile.deepnote-xfull --build-arg APT_MIRROR=$(DEBIAN_MIRROR) -t $(IMAGE_deepnote-xfull) .
 
-build-all: build-base build-lite build-lite-novnc build-lite-rdp build-lite-novnc-rdp build-xfull build-xfull-remote build-full build-icewm-thin build-icewm-thin-novnc build-icewm-thin-rdp build-deepnote-xfull
+build-lite: build-base
+	docker build -f images/Dockerfile.lite --build-arg BASE_IMAGE=$(IMAGE_base) -t $(IMAGE_lite) .
 
-push-base: ; docker push $(BASE_IMAGE)
-push-lite: ; docker push $(LITE_IMAGE)
-push-lite-novnc: ; docker push $(LITE_NOVNC_IMAGE)
-push-lite-rdp: ; docker push $(LITE_RDP_IMAGE)
-push-lite-novnc-rdp: ; docker push $(LITE_NOVNC_RDP_IMAGE)
-push-xfull: ; docker push $(XFULL_IMAGE)
-push-xfull-remote: ; docker push $(XFULL_REMOTE_IMAGE)
-push-full: ; docker push $(FULL_IMAGE)
-push-icewm-thin: ; docker push $(ICEWM_THIN_IMAGE)
-push-icewm-thin-novnc: ; docker push $(ICEWM_THIN_NOVNC_IMAGE)
-push-icewm-thin-rdp: ; docker push $(ICEWM_THIN_RDP_IMAGE)
-push-deepnote-xfull: ; docker push $(DEEPNOTE_XFULL_IMAGE)
+build-lite-novnc: build-lite
+	docker build -f images/Dockerfile.lite-novnc --build-arg BASE_IMAGE=$(IMAGE_lite) -t $(IMAGE_lite-novnc) .
+
+build-lite-rdp: build-lite
+	docker build -f images/Dockerfile.lite-rdp --build-arg BASE_IMAGE=$(IMAGE_lite) -t $(IMAGE_lite-rdp) .
+
+build-lite-novnc-rdp: build-lite-novnc
+	docker build -f images/Dockerfile.lite-novnc-rdp --build-arg BASE_IMAGE=$(IMAGE_lite-novnc) -t $(IMAGE_lite-novnc-rdp) .
+
+build-xfull: build-lite
+	docker build -f images/Dockerfile.xfull --build-arg BASE_IMAGE=$(IMAGE_lite) -t $(IMAGE_xfull) .
+
+build-xfull-remote: build-xfull
+	docker build -f images/Dockerfile.xfull-remote --build-arg BASE_IMAGE=$(IMAGE_xfull) -t $(IMAGE_xfull-remote) .
+
+build-full: build-xfull-remote
+	docker build -f images/Dockerfile.full --build-arg BASE_IMAGE=$(IMAGE_xfull-remote) -t $(IMAGE_full) .
+
+build-icewm-thin: build-base
+	docker build -f images/Dockerfile.icewm-thin --build-arg BASE_IMAGE=$(IMAGE_base) -t $(IMAGE_icewm-thin) .
+
+build-icewm-thin-novnc: build-icewm-thin
+	docker build -f images/Dockerfile.icewm-thin-novnc --build-arg BASE_IMAGE=$(IMAGE_icewm-thin) -t $(IMAGE_icewm-thin-novnc) .
+
+build-icewm-thin-rdp: build-icewm-thin
+	docker build -f images/Dockerfile.icewm-thin-rdp --build-arg BASE_IMAGE=$(IMAGE_icewm-thin) -t $(IMAGE_icewm-thin-rdp) .
+
+push-%:
+	docker push $(IMAGE_$*)
+
+build-all: $(addprefix build-,$(ALL_TARGETS))
+push-all: $(addprefix push-,$(ALL_TARGETS))
 
 cleanup-tags:
 	@./scripts/delete-dockerhub-tags.sh $(IMAGE) $(TAGS) || true
 
-push-all: push-base push-lite push-lite-novnc push-lite-rdp push-lite-novnc-rdp push-xfull push-xfull-remote push-full push-icewm-thin push-icewm-thin-novnc push-icewm-thin-rdp push-deepnote-xfull
-
 show-tags:
-	@echo "BASE_IMAGE=$(BASE_IMAGE)"
-	@echo "LITE_IMAGE=$(LITE_IMAGE)"
-	@echo "LITE_NOVNC_IMAGE=$(LITE_NOVNC_IMAGE)"
-	@echo "LITE_RDP_IMAGE=$(LITE_RDP_IMAGE)"
-	@echo "LITE_NOVNC_RDP_IMAGE=$(LITE_NOVNC_RDP_IMAGE)"
-	@echo "XFULL_IMAGE=$(XFULL_IMAGE)"
-	@echo "XFULL_REMOTE_IMAGE=$(XFULL_REMOTE_IMAGE)"
-	@echo "FULL_IMAGE=$(FULL_IMAGE)"
-	@echo "ICEWM_THIN_IMAGE=$(ICEWM_THIN_IMAGE)"
-	@echo "ICEWM_THIN_NOVNC_IMAGE=$(ICEWM_THIN_NOVNC_IMAGE)"
-	@echo "ICEWM_THIN_RDP_IMAGE=$(ICEWM_THIN_RDP_IMAGE)"
-	@echo "DEEPNOTE_XFULL_IMAGE=$(DEEPNOTE_XFULL_IMAGE)"
-
+	@$(foreach t,$(ALL_TARGETS),echo "$(t)=$(IMAGE_$(t))";)
 
 optimize:
-	bash -n apt.sh scripts/apt-debian.sh scripts/chrome-wrapper.sh scripts/delete-dockerhub-tags.sh scripts/entrypoints/start-sshd.sh scripts/entrypoints/start-vnc.sh scripts/entrypoints/start-novnc.sh scripts/entrypoints/start-workstation.sh scripts/entrypoints/start-vnc-rdp.sh
+	bash -n apt.sh scripts/apt-debian.sh scripts/chrome-wrapper.sh scripts/delete-dockerhub-tags.sh scripts/entrypoints/start-sshd.sh scripts/entrypoints/start-vnc.sh scripts/entrypoints/start-novnc.sh scripts/entrypoints/start-workstation.sh scripts/entrypoints/start-vnc-rdp.sh dev/replace.sh
+	@find . -type l -print | sed 's#^#symlink: #' || true
 	@echo "[optimize] shell syntax check passed"
