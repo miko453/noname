@@ -2,28 +2,54 @@ SHELL := /bin/bash
 
 REGISTRY ?= docker.io
 IMAGE ?= miko453/headless
-VERSION := latest
+VERSION ?= latest
 APT_MIRROR ?= http://mirrors.7.b.0.5.0.7.4.0.1.0.0.2.ip6.arpa/system/kali
 DEBIAN_MIRROR ?= http://mirrors.7.b.0.5.0.7.4.0.1.0.0.2.ip6.arpa/system/debian
 
 # ---------- 镜像定义 ----------
-IMAGE_base := $(REGISTRY)/$(IMAGE):base-latest
-IMAGE_lite := $(REGISTRY)/$(IMAGE):lite-latest
+IMAGE_base := $(REGISTRY)/$(IMAGE):base-$(VERSION)
+IMAGE_lite := $(REGISTRY)/$(IMAGE):lite-$(VERSION)
 IMAGE_lite_latest := $(REGISTRY)/$(IMAGE):latest
-IMAGE_lite-novnc := $(REGISTRY)/$(IMAGE):lite-novnc-latest
-IMAGE_lite-rdp := $(REGISTRY)/$(IMAGE):lite-rdp-latest
-IMAGE_lite-novnc-rdp := $(REGISTRY)/$(IMAGE):lite-novnc-rdp-latest
-IMAGE_xfull := $(REGISTRY)/$(IMAGE):xfull-latest
-IMAGE_xfull-remote := $(REGISTRY)/$(IMAGE):xfull-remote-latest
-IMAGE_full := $(REGISTRY)/$(IMAGE):full-latest
-IMAGE_icewm-thin := $(REGISTRY)/$(IMAGE):icewm-thin-latest
-IMAGE_icewm-thin-novnc := $(REGISTRY)/$(IMAGE):icewm-thin-novnc-latest
-IMAGE_icewm-thin-rdp := $(REGISTRY)/$(IMAGE):icewm-thin-rdp-latest
-IMAGE_deepnote-xfull := $(REGISTRY)/$(IMAGE):deepnote-xfull-latest
+IMAGE_lite-novnc := $(REGISTRY)/$(IMAGE):lite-novnc-$(VERSION)
+IMAGE_lite-rdp := $(REGISTRY)/$(IMAGE):lite-rdp-$(VERSION)
+IMAGE_lite-novnc-rdp := $(REGISTRY)/$(IMAGE):lite-novnc-rdp-$(VERSION)
+IMAGE_xfull := $(REGISTRY)/$(IMAGE):xfull-$(VERSION)
+IMAGE_xfull-remote := $(REGISTRY)/$(IMAGE):xfull-remote-$(VERSION)
+IMAGE_full := $(REGISTRY)/$(IMAGE):full-$(VERSION)
+IMAGE_icewm-thin := $(REGISTRY)/$(IMAGE):icewm-thin-$(VERSION)
+IMAGE_icewm-thin-novnc := $(REGISTRY)/$(IMAGE):icewm-thin-novnc-$(VERSION)
+IMAGE_icewm-thin-rdp := $(REGISTRY)/$(IMAGE):icewm-thin-rdp-$(VERSION)
+IMAGE_deepnote-xfull := $(REGISTRY)/$(IMAGE):deepnote-xfull-$(VERSION)
 
-ALL_TARGETS := base lite lite-novnc lite-rdp lite-novnc-rdp xfull xfull-remote full icewm-thin icewm-thin-novnc icewm-thin-rdp deepnote-xfull
+ALL_TARGETS := \
+	base \
+	lite \
+	lite-novnc \
+	lite-rdp \
+	lite-novnc-rdp \
+	xfull \
+	xfull-remote \
+	full \
+	icewm-thin \
+	icewm-thin-novnc \
+	icewm-thin-rdp \
+	deepnote-xfull
 
-.PHONY: $(addprefix build-,$(ALL_TARGETS)) $(addprefix push-,$(ALL_TARGETS)) build-all push-all cleanup-tags show-tags optimize
+.PHONY: $(addprefix build-,$(ALL_TARGETS)) $(addprefix push-,$(ALL_TARGETS)) \
+	build-all push-all cleanup-tags show-tags optimize validate help
+
+help:
+	@echo "常用目标:"
+	@echo "  make validate                # 检查本地依赖工具"
+	@echo "  make show-tags VERSION=v1    # 查看将要使用的镜像 tag"
+	@echo "  make build-all VERSION=v1    # 构建全部镜像"
+	@echo "  make push-all VERSION=v1     # 推送全部镜像"
+	@echo "  make cleanup-tags VERSION=v1 # 清理同版本 tag"
+
+validate:
+	@command -v docker >/dev/null || (echo "[validate] docker 未安装" && exit 1)
+	@command -v bash >/dev/null || (echo "[validate] bash 未安装" && exit 1)
+	@echo "[validate] 环境检查通过"
 
 # ---------- Build ----------
 build-base:
@@ -65,11 +91,11 @@ build-icewm-thin-rdp:
 
 # ---------- Push ----------
 push-base:
-	@./scripts/delete-dockerhub-tags.sh $(IMAGE) base-latest || true
+	@./scripts/delete-dockerhub-tags.sh $(IMAGE) base-$(VERSION) || true
 	docker push $(IMAGE_base)
 
 push-lite:
-	@./scripts/delete-dockerhub-tags.sh $(IMAGE) lite-latest || true
+	@./scripts/delete-dockerhub-tags.sh $(IMAGE) lite-$(VERSION) || true
 	@./scripts/delete-dockerhub-tags.sh $(IMAGE) latest || true
 	docker push $(IMAGE_lite)
 	docker push $(IMAGE_lite_latest)
@@ -109,12 +135,12 @@ build-all: $(addprefix build-,$(ALL_TARGETS))
 push-all: $(addprefix push-,$(ALL_TARGETS))
 
 cleanup-tags:
-	@./scripts/delete-dockerhub-tags.sh $(IMAGE) $(ALL_TARGETS:%=%-latest) || true
+	@./scripts/delete-dockerhub-tags.sh $(IMAGE) $(ALL_TARGETS:%=%-$(VERSION)) || true
 
 show-tags:
 	@$(foreach t,$(ALL_TARGETS),echo "$(t)=$(IMAGE_$(t))";)
 
 optimize:
-	bash -n apt.sh scripts/apt-debian.sh scripts/chrome-wrapper.sh scripts/delete-dockerhub-tags.sh scripts/entrypoints/*.sh dev/replace.sh
+	bash -n scripts/apt.sh scripts/apt-debian.sh scripts/chrome-wrapper.sh scripts/delete-dockerhub-tags.sh scripts/entrypoints/*.sh dev/replace.sh
 	@find . -type l -print | sed 's#^#symlink: #' || true
 	@echo "[optimize] shell syntax check passed"
