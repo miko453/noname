@@ -7,24 +7,39 @@ on:
 
 env:
   VERSION: latest
+  REGISTRY: docker.io
+  IMAGE: miko453/headless
 
 jobs:
+  # ------------------- Base job -------------------
   base:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: docker/setup-buildx-action@v3
+
       - uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Cleanup old base-latest
-        run: make push-base  # 已在 Makefile 里自动清理
-      - name: Build + push base
-        run: |
-          make build-base
-          make push-base
 
+      - name: Cleanup old base-latest
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+        run: ./scripts/delete-dockerhub-tags.sh ${{ env.IMAGE }} base-latest || true
+
+      - name: Build base
+        run: make build-base
+
+      - name: Push base
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+        run: make push-base
+
+  # ------------------- Lite job -------------------
   lite:
     needs: base
     runs-on: ubuntu-latest
@@ -35,9 +50,29 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Build + push lite
-        run: make build-lite && make push-lite
 
+      - name: Cleanup old lite tags
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+        run: |
+          ./scripts/delete-dockerhub-tags.sh ${{ env.IMAGE }} lite-latest || true
+          ./scripts/delete-dockerhub-tags.sh ${{ env.IMAGE }} latest || true
+
+      - name: Build lite
+        run: make build-lite
+
+      - name: Push lite
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+        run: |
+          make push-lite
+          # 同时打 latest 标签
+          docker tag ${{ env.REGISTRY }}/${{ env.IMAGE }}:lite-latest ${{ env.REGISTRY }}/${{ env.IMAGE }}:latest
+          docker push ${{ env.REGISTRY }}/${{ env.IMAGE }}:latest
+
+  # ------------------- xfull job -------------------
   xfull:
     needs: base
     runs-on: ubuntu-latest
@@ -48,11 +83,12 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+
       - name: Build + push xfull
         run: make build-xfull && make push-xfull
 
+  # ------------------- deepnote-xfull -------------------
   deepnote-xfull:
-    needs: base
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -61,9 +97,11 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+
       - name: Build + push deepnote-xfull
         run: make build-deepnote-xfull && make push-deepnote-xfull
 
+  # ------------------- xfull-remote -------------------
   xfull-remote:
     needs: xfull
     runs-on: ubuntu-latest
@@ -74,9 +112,11 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+
       - name: Build + push xfull-remote
         run: make build-xfull-remote && make push-xfull-remote
 
+  # ------------------- full -------------------
   full:
     needs: xfull-remote
     runs-on: ubuntu-latest
@@ -87,10 +127,11 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+
       - name: Build + push full
         run: make build-full && make push-full
 
-  # lite 系列扩展
+  # ---------------- Lite 扩展 ----------------
   lite-novnc:
     needs: lite
     runs-on: ubuntu-latest
@@ -130,7 +171,7 @@ jobs:
       - name: Build + push lite-novnc-rdp
         run: make build-lite-novnc-rdp && make push-lite-novnc-rdp
 
-  # icewm 系列
+  # ---------------- IceWM 系列 ----------------
   icewm-thin:
     needs: base
     runs-on: ubuntu-latest
