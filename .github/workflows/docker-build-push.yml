@@ -58,7 +58,6 @@ jobs:
         run: make push-xfull VERSION=${VERSION}
 
   deepnote-xfull:
-    needs: base
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
