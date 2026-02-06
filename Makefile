@@ -32,7 +32,7 @@ build-deepnote-xfull:
 	docker build -f images/Dockerfile.deepnote-xfull --build-arg APT_MIRROR=$(DEBIAN_MIRROR) -t $(IMAGE_deepnote-xfull) .
 
 build-lite:
-	docker build -f images/Dockerfile.lite --build-arg BASE_IMAGE=$(IMAGE_base) -t $(IMAGE_lite) .
+	docker build -f images/Dockerfile.lite --build-arg BASE_IMAGE=$(IMAGE_base) -t $(IMAGE_lite) -t latest .
 
 build-lite-novnc:
 	docker build -f images/Dockerfile.lite-novnc --build-arg BASE_IMAGE=$(IMAGE_lite) -t $(IMAGE_lite-novnc) .

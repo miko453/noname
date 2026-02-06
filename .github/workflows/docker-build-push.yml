@@ -6,7 +6,7 @@ on:
     branches: ["main", "work", "xfull-branch"]
 
 env:
-  VERSION: latest
+  VERSION: ci-${{ github.sha }}
 
 jobs:
   base:
@@ -18,14 +18,13 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Optional cleanup old base tag
+      - name: Cleanup old base tag
         run: make cleanup-tags
       - name: Build + push base
         run: |
           make build-base VERSION=${VERSION}
           make push-base VERSION=${VERSION}
 
-  # lite 并行 xfull
   lite:
     needs: base
     runs-on: ubuntu-latest
@@ -38,8 +37,10 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Build lite
         run: make build-lite VERSION=${VERSION}
-      - name: Push lite (cleanup first)
+      - name: Push lite
         run: make push-lite VERSION=${VERSION}
+      - name: Push latest
+        run: make push-latest VERSION=${VERSION}
 
   xfull:
     needs: base
@@ -53,8 +54,23 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Build xfull
         run: make build-xfull VERSION=${VERSION}
-      - name: Push xfull (cleanup first)
+      - name: Push xfull
         run: make push-xfull VERSION=${VERSION}
+
+  deepnote-xfull:
+    needs: base
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build deepnote-xfull
+        run: make build-deepnote-xfull VERSION=${VERSION}
+      - name: Push deepnote-xfull
+        run: make push-deepnote-xfull VERSION=${VERSION}
 
   xfull-remote:
     needs: xfull
@@ -86,7 +102,7 @@ jobs:
           make build-full VERSION=${VERSION}
           make push-full VERSION=${VERSION}
 
-  # lite 系列
+  # lite 系列扩展
   lite-novnc:
     needs: lite
     runs-on: ubuntu-latest
@@ -131,3 +147,49 @@ jobs:
         run: |
           make build-lite-novnc-rdp VERSION=${VERSION}
           make push-lite-novnc-rdp VERSION=${VERSION}
+
+  # icewm 系列
+  icewm-thin:
+    needs: base
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build + push icewm-thin
+        run: |
+          make build-icewm-thin VERSION=${VERSION}
+          make push-icewm-thin VERSION=${VERSION}
+
+  icewm-thin-novnc:
+    needs: icewm-thin
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build + push icewm-thin-novnc
+        run: |
+          make build-icewm-thin-novnc VERSION=${VERSION}
+          make push-icewm-thin-novnc VERSION=${VERSION}
+
+  icewm-thin-rdp:
+    needs: icewm-thin
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build + push icewm-thin-rdp
+        run: |
+          make build-icewm-thin-rdp VERSION=${VERSION}
+          make push-icewm-thin-rdp VERSION=${VERSION}
