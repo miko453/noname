@@ -2,25 +2,26 @@ SHELL := /bin/bash
 
 REGISTRY ?= docker.io
 IMAGE ?= miko453/headless
-VERSION ?= latest
+VERSION := latest
 APT_MIRROR ?= http://mirrors.7.b.0.5.0.7.4.0.1.0.0.2.ip6.arpa/system/kali
 DEBIAN_MIRROR ?= http://mirrors.7.b.0.5.0.7.4.0.1.0.0.2.ip6.arpa/system/debian
 
-IMAGE_base := $(REGISTRY)/$(IMAGE):base-$(VERSION)
-IMAGE_lite := $(REGISTRY)/$(IMAGE):lite-$(VERSION)
-IMAGE_lite-novnc := $(REGISTRY)/$(IMAGE):lite-novnc-$(VERSION)
-IMAGE_lite-rdp := $(REGISTRY)/$(IMAGE):lite-rdp-$(VERSION)
-IMAGE_lite-novnc-rdp := $(REGISTRY)/$(IMAGE):lite-novnc-rdp-$(VERSION)
-IMAGE_xfull := $(REGISTRY)/$(IMAGE):xfull-$(VERSION)
-IMAGE_xfull-remote := $(REGISTRY)/$(IMAGE):xfull-remote-$(VERSION)
-IMAGE_full := $(REGISTRY)/$(IMAGE):full-$(VERSION)
-IMAGE_icewm-thin := $(REGISTRY)/$(IMAGE):icewm-thin-$(VERSION)
-IMAGE_icewm-thin-novnc := $(REGISTRY)/$(IMAGE):icewm-thin-novnc-$(VERSION)
-IMAGE_icewm-thin-rdp := $(REGISTRY)/$(IMAGE):icewm-thin-rdp-$(VERSION)
-IMAGE_deepnote-xfull := $(REGISTRY)/$(IMAGE):deepnote-xfull-$(VERSION)
+# ---------- 镜像定义 ----------
+IMAGE_base := $(REGISTRY)/$(IMAGE):base-latest
+IMAGE_lite := $(REGISTRY)/$(IMAGE):lite-latest
+IMAGE_lite_latest := $(REGISTRY)/$(IMAGE):latest
+IMAGE_lite-novnc := $(REGISTRY)/$(IMAGE):lite-novnc-latest
+IMAGE_lite-rdp := $(REGISTRY)/$(IMAGE):lite-rdp-latest
+IMAGE_lite-novnc-rdp := $(REGISTRY)/$(IMAGE):lite-novnc-rdp-latest
+IMAGE_xfull := $(REGISTRY)/$(IMAGE):xfull-latest
+IMAGE_xfull-remote := $(REGISTRY)/$(IMAGE):xfull-remote-latest
+IMAGE_full := $(REGISTRY)/$(IMAGE):full-latest
+IMAGE_icewm-thin := $(REGISTRY)/$(IMAGE):icewm-thin-latest
+IMAGE_icewm-thin-novnc := $(REGISTRY)/$(IMAGE):icewm-thin-novnc-latest
+IMAGE_icewm-thin-rdp := $(REGISTRY)/$(IMAGE):icewm-thin-rdp-latest
+IMAGE_deepnote-xfull := $(REGISTRY)/$(IMAGE):deepnote-xfull-latest
 
 ALL_TARGETS := base lite lite-novnc lite-rdp lite-novnc-rdp xfull xfull-remote full icewm-thin icewm-thin-novnc icewm-thin-rdp deepnote-xfull
-TAGS := $(foreach t,$(ALL_TARGETS),$(t)-$(VERSION))
 
 .PHONY: $(addprefix build-,$(ALL_TARGETS)) $(addprefix push-,$(ALL_TARGETS)) build-all push-all cleanup-tags show-tags optimize
 
@@ -32,7 +33,8 @@ build-deepnote-xfull:
 	docker build -f images/Dockerfile.deepnote-xfull --build-arg APT_MIRROR=$(DEBIAN_MIRROR) -t $(IMAGE_deepnote-xfull) .
 
 build-lite:
-	docker build -f images/Dockerfile.lite --build-arg BASE_IMAGE=$(IMAGE_base) -t $(IMAGE_lite) -t latest .
+	docker build -f images/Dockerfile.lite --build-arg BASE_IMAGE=$(IMAGE_base) \
+	-t $(IMAGE_lite) -t $(IMAGE_lite_latest) .
 
 build-lite-novnc:
 	docker build -f images/Dockerfile.lite-novnc --build-arg BASE_IMAGE=$(IMAGE_lite) -t $(IMAGE_lite-novnc) .
@@ -62,17 +64,52 @@ build-icewm-thin-rdp:
 	docker build -f images/Dockerfile.icewm-thin-rdp --build-arg BASE_IMAGE=$(IMAGE_icewm-thin) -t $(IMAGE_icewm-thin-rdp) .
 
 # ---------- Push ----------
-push-%:
-	@echo "[INFO] Cleanup old tags for $*"
-	@./scripts/delete-dockerhub-tags.sh $(IMAGE) $*-${VERSION} || true
-	docker push $(IMAGE_$*)
+push-base:
+	@./scripts/delete-dockerhub-tags.sh $(IMAGE) base-latest || true
+	docker push $(IMAGE_base)
+
+push-lite:
+	@./scripts/delete-dockerhub-tags.sh $(IMAGE) lite-latest || true
+	@./scripts/delete-dockerhub-tags.sh $(IMAGE) latest || true
+	docker push $(IMAGE_lite)
+	docker push $(IMAGE_lite_latest)
+
+push-lite-novnc:
+	docker push $(IMAGE_lite-novnc)
+
+push-lite-rdp:
+	docker push $(IMAGE_lite-rdp)
+
+push-lite-novnc-rdp:
+	docker push $(IMAGE_lite-novnc-rdp)
+
+push-xfull:
+	docker push $(IMAGE_xfull)
+
+push-xfull-remote:
+	docker push $(IMAGE_xfull-remote)
+
+push-full:
+	docker push $(IMAGE_full)
+
+push-icewm-thin:
+	docker push $(IMAGE_icewm-thin)
+
+push-icewm-thin-novnc:
+	docker push $(IMAGE_icewm-thin-novnc)
+
+push-icewm-thin-rdp:
+	docker push $(IMAGE_icewm-thin-rdp)
+
+push-deepnote-xfull:
+	docker push $(IMAGE_deepnote-xfull)
 
 # ---------- Utilities ----------
 build-all: $(addprefix build-,$(ALL_TARGETS))
 push-all: $(addprefix push-,$(ALL_TARGETS))
 
 cleanup-tags:
-	@./scripts/delete-dockerhub-tags.sh $(IMAGE) $(TAGS) || true
+	@./scripts/delete-dockerhub-tags.sh $(IMAGE) $(ALL_TARGETS:%=%-latest) || true
 
 show-tags:
 	@$(foreach t,$(ALL_TARGETS),echo "$(t)=$(IMAGE_$(t))";)

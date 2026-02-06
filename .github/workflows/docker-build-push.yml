@@ -18,12 +18,12 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Cleanup old base tag
-        run: make cleanup-tags
+      - name: Cleanup old base-latest
+        run: make push-base  # 已在 Makefile 里自动清理
       - name: Build + push base
         run: |
-          make build-base VERSION=${VERSION}
-          make push-base VERSION=${VERSION}
+          make build-base
+          make push-base
 
   lite:
     needs: base
@@ -35,12 +35,8 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Build lite
-        run: make build-lite VERSION=${VERSION}
-      - name: Push lite
-        run: make push-lite VERSION=${VERSION}
-      - name: Push latest
-        run: make push-latest VERSION=${VERSION}
+      - name: Build + push lite
+        run: make build-lite && make push-lite
 
   xfull:
     needs: base
@@ -52,12 +48,11 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Build xfull
-        run: make build-xfull VERSION=${VERSION}
-      - name: Push xfull
-        run: make push-xfull VERSION=${VERSION}
+      - name: Build + push xfull
+        run: make build-xfull && make push-xfull
 
   deepnote-xfull:
+    needs: base
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -66,10 +61,8 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Build deepnote-xfull
-        run: make build-deepnote-xfull VERSION=${VERSION}
-      - name: Push deepnote-xfull
-        run: make push-deepnote-xfull VERSION=${VERSION}
+      - name: Build + push deepnote-xfull
+        run: make build-deepnote-xfull && make push-deepnote-xfull
 
   xfull-remote:
     needs: xfull
@@ -82,9 +75,7 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Build + push xfull-remote
-        run: |
-          make build-xfull-remote VERSION=${VERSION}
-          make push-xfull-remote VERSION=${VERSION}
+        run: make build-xfull-remote && make push-xfull-remote
 
   full:
     needs: xfull-remote
@@ -97,9 +88,7 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Build + push full
-        run: |
-          make build-full VERSION=${VERSION}
-          make push-full VERSION=${VERSION}
+        run: make build-full && make push-full
 
   # lite 系列扩展
   lite-novnc:
@@ -113,9 +102,7 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Build + push lite-novnc
-        run: |
-          make build-lite-novnc VERSION=${VERSION}
-          make push-lite-novnc VERSION=${VERSION}
+        run: make build-lite-novnc && make push-lite-novnc
 
   lite-rdp:
     needs: lite
@@ -128,9 +115,7 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Build + push lite-rdp
-        run: |
-          make build-lite-rdp VERSION=${VERSION}
-          make push-lite-rdp VERSION=${VERSION}
+        run: make build-lite-rdp && make push-lite-rdp
 
   lite-novnc-rdp:
     needs: lite-novnc
@@ -143,9 +128,7 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Build + push lite-novnc-rdp
-        run: |
-          make build-lite-novnc-rdp VERSION=${VERSION}
-          make push-lite-novnc-rdp VERSION=${VERSION}
+        run: make build-lite-novnc-rdp && make push-lite-novnc-rdp
 
   # icewm 系列
   icewm-thin:
@@ -159,9 +142,7 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Build + push icewm-thin
-        run: |
-          make build-icewm-thin VERSION=${VERSION}
-          make push-icewm-thin VERSION=${VERSION}
+        run: make build-icewm-thin && make push-icewm-thin
 
   icewm-thin-novnc:
     needs: icewm-thin
@@ -174,9 +155,7 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Build + push icewm-thin-novnc
-        run: |
-          make build-icewm-thin-novnc VERSION=${VERSION}
-          make push-icewm-thin-novnc VERSION=${VERSION}
+        run: make build-icewm-thin-novnc && make push-icewm-thin-novnc
 
   icewm-thin-rdp:
     needs: icewm-thin
@@ -189,6 +168,4 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Build + push icewm-thin-rdp
-        run: |
-          make build-icewm-thin-rdp VERSION=${VERSION}
-          make push-icewm-thin-rdp VERSION=${VERSION}
+        run: make build-icewm-thin-rdp && make push-icewm-thin-rdp
