@@ -18,5 +18,10 @@ RUN chmod +x /usr/local/bin/apt.sh /usr/local/bin/start-sshd.sh && \
     /usr/local/bin/apt.sh restore && \
     rm -rf /var/lib/apt/lists/*
 
+    RUN apt-get update && apt-get install -y sudo zsh && \
+    echo "root:toor" | chpasswd && \
+    useradd -m -d /config -s /bin/zsh -G sudo qwe && \
+    echo "qwe:toor" | chpasswd
+
 EXPOSE 22
 CMD ["/usr/local/bin/start-sshd.sh"]
