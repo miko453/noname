@@ -34,17 +34,18 @@ base (SSH only)
 ## 使用方式
 
 ```bash
+make validate
 make show-tags
 make build-all
 make push-all
 ```
 
-可选：发布前清理旧 tag。
+可选：发布前清理旧 tag（支持指定版本）。
 
 ```bash
 export DOCKERHUB_USERNAME=<user>
 export DOCKERHUB_TOKEN=<token>
-make cleanup-tags VERSION=<version>
+make cleanup-tags VERSION=v1.2.3
 ```
 
 ## 开发辅助
@@ -53,6 +54,14 @@ make cleanup-tags VERSION=<version>
 
 ```bash
 bash dev/replace.sh
+```
+
+
+指定版本构建/推送：
+
+```bash
+make build-all VERSION=v1.2.3
+make push-all VERSION=v1.2.3
 ```
 
 可通过环境变量覆盖目标值，例如：
