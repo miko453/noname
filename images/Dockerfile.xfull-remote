@@ -1,4 +1,4 @@
-ARG BASE_IMAGE=miko453/headless:xfull
+ARG BASE_IMAGE=miko453/headless:xfull-latest
 FROM ${BASE_IMAGE}
 
 COPY scripts/entrypoints/start-novnc.sh /app/start-novnc.sh

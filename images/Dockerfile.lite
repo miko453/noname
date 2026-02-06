@@ -1,4 +1,4 @@
-ARG BASE_IMAGE=miko453/headless:base
+ARG BASE_IMAGE=miko453/headless:base-latest
 FROM ${BASE_IMAGE}
 
 ENV DEBIAN_FRONTEND=noninteractive \

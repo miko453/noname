@@ -1,4 +1,4 @@
-ARG BASE_IMAGE=miko453/headless:xfull-remote
+ARG BASE_IMAGE=miko453/headless:xfull-remote-latest
 FROM ${BASE_IMAGE}
 
 ENV ENABLE_NOMACHINE=1

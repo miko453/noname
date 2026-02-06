@@ -6,7 +6,7 @@ on:
     branches: ["main", "work", "xfull-branch"]
 
 env:
-  VERSION: ci-${{ github.sha }}
+  VERSION: latest
 
 jobs:
   base:

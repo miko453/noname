@@ -1,4 +1,4 @@
-ARG BASE_IMAGE=miko453/headless:lite-novnc
+ARG BASE_IMAGE=miko453/headless:lite-novnc-latest
 FROM ${BASE_IMAGE}
 
 COPY scripts/entrypoints/start-vnc-rdp.sh /app/start-vnc-rdp.sh
