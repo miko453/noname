@@ -46,7 +46,7 @@ build-lite-novnc-rdp:
 	docker build -f images/Dockerfile.lite-novnc-rdp --build-arg BASE_IMAGE=$(IMAGE_lite-novnc) -t $(IMAGE_lite-novnc-rdp) .
 
 build-xfull:
-	docker build -f images/Dockerfile.xfull --build-arg BASE_IMAGE=$(IMAGE_lite) -t $(IMAGE_xfull) .
+	docker build -f images/Dockerfile.xfull --build-arg BASE_IMAGE=$(IMAGE_base) -t $(IMAGE_xfull) .
 
 build-xfull-remote:
 	docker build -f images/Dockerfile.xfull-remote --build-arg BASE_IMAGE=$(IMAGE_xfull) -t $(IMAGE_xfull-remote) .

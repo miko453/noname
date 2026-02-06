@@ -10,6 +10,7 @@
     python3Minimal
     qemu
     qemu-utils
+    gnumake
   ];
   services.docker.enable = true;
 }
