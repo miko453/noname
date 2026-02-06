@@ -28,7 +28,9 @@ jobs:
         env:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-        run: ./scripts/delete-dockerhub-tags.sh ${{ env.IMAGE }} base-latest || true
+          REPO_NAME: ${{ env.IMAGE }}
+          TAGS: base-latest
+        run: ./scripts/delete-dockerhub-tags.sh
 
       - name: Build base
         run: make build-base
@@ -55,9 +57,9 @@ jobs:
         env:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-        run: |
-          ./scripts/delete-dockerhub-tags.sh ${{ env.IMAGE }} lite-latest || true
-          ./scripts/delete-dockerhub-tags.sh ${{ env.IMAGE }} latest || true
+          REPO_NAME: ${{ env.IMAGE }}
+          TAGS: "lite-latest latest"
+        run: ./scripts/delete-dockerhub-tags.sh
 
       - name: Build lite
         run: make build-lite

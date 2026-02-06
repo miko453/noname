@@ -1,19 +1,34 @@
-#!/usr/bin/env bash
-set -euo pipefail
+#!/bin/bash
+set -e
 
-REPO="${1:?usage: $0 <repo> <tag1> [tag2 ...]}"
-shift
+# 确保必要变量存在
+if [[ -z "$DOCKERHUB_USERNAME" || -z "$DOCKERHUB_TOKEN" || -z "$REPO_NAME" || -z "$TAGS" ]]; then
+  echo "Usage: DOCKERHUB_USERNAME, DOCKERHUB_TOKEN, REPO_NAME and TAGS must be set"
+  exit 1
+fi
 
-: "${DOCKERHUB_USERNAME:?DOCKERHUB_USERNAME is required}"
-: "${DOCKERHUB_TOKEN:?DOCKERHUB_TOKEN is required}"
+# 登录 Docker Hub 获取 JWT token
+TOKEN=$(curl -s -H "Content-Type: application/json" \
+  -X POST -d "{\"username\": \"$DOCKERHUB_USERNAME\", \"password\": \"$DOCKERHUB_TOKEN\"}" \
+  https://hub.docker.com/v2/users/login/ | jq -r .token)
 
-TOKEN=$(curl -fsSL -X POST https://hub.docker.com/v2/users/login/ \
-  -H 'Content-Type: application/json' \
-  -d "{\"username\":\"${DOCKERHUB_USERNAME}\",\"password\":\"${DOCKERHUB_TOKEN}\"}" | python -c 'import sys,json;print(json.load(sys.stdin)["token"])')
+if [[ -z "$TOKEN" || "$TOKEN" == "null" ]]; then
+  echo "Failed to get Docker Hub token"
+  exit 1
+fi
 
-for tag in "$@"; do
-  echo "Deleting ${REPO}:${tag}"
-  curl -fsSL -X DELETE \
-    -H "Authorization: JWT ${TOKEN}" \
-    "https://hub.docker.com/v2/repositories/${REPO}/tags/${tag}/" || true
+# 删除指定 tag
+for TAG in $TAGS; do
+  echo "Deleting tag $TAG from $REPO_NAME..."
+  HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -X DELETE \
+    -H "Authorization: JWT $TOKEN" \
+    "https://hub.docker.com/v2/repositories/$REPO_NAME/tags/$TAG/")
+
+  if [[ "$HTTP_CODE" == "204" ]]; then
+    echo "Tag $TAG deleted successfully."
+  elif [[ "$HTTP_CODE" == "404" ]]; then
+    echo "Tag $TAG not found, skipping."
+  else
+    echo "Failed to delete tag $TAG, HTTP status: $HTTP_CODE"
+  fi
 done
