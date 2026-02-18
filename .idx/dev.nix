@@ -1,4 +1,5 @@
 { pkgs, ... }: {
+  channel = "unstable";
   packages = with pkgs; [
     sudo
     htop
@@ -14,6 +15,7 @@
     nodejs 
     openssh
     gnupg
+    docker-compose
   ];
   services.docker.enable = true;
 }
